@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Real-Time Conversation Flow</title>
+  <style>
+    body { font-family: sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+    h2 { color: #333; }
+    button { padding: 10px 20px; margin: 5px; cursor: pointer; border: none; border-radius: 5px; }
+    #startBtn { background-color: #4CAF50; color: white; }
+    #stopBtn { background-color: #f44336; color: white; }
+    #status { margin-top: 10px; font-weight: bold; }
+
+    #conversation-display {
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-top: 20px;
+      height: 300px;
+      overflow-y: scroll;
+      background-color: #f9f9f9;
+    }
+    .chunk-en { color: #007bff; margin-bottom: 5px; font-weight: bold; }
+    .chunk-te { color: #28a745; margin-bottom: 15px; border-bottom: 1px dotted #eee; padding-bottom: 5px; }
+  </style>
+</head>
+<body>
+  <h2>Real-Time English → Telugu Translation</h2>
+  <button id="startBtn" onclick="startRecording()">Start Recording</button>
+  <button id="stopBtn" onclick="stopRecording()" disabled>Stop Recording</button>
+  <p id="status">Status: Disconnected</p>
+
+  <h3>Conversation History:</h3>
+  <div id="conversation-display">
+    </div>
+
+  <p><strong>Full English Text (Accumulated):</strong> <span id="full-english-history"></span></p>
+
+<script>
+let ws;
+let mediaRecorder;
+const chunkSizeMs = 1000; // Send 1-second chunks
+
+function startRecording() {
+  document.getElementById("startBtn").disabled = true;
+  document.getElementById("stopBtn").disabled = false;
+  document.getElementById("status").innerText = "Status: Connecting...";
+  document.getElementById("conversation-display").innerHTML = "";
+  document.getElementById("full-english-history").innerText = "";
+
+  // 1. Establish WebSocket connection
+  // NOTE: Ensure your server runs on port 8000 (e.g., uvicorn app:app --port 8000)
+  ws = new WebSocket("ws://127.0.0.1:8000/ws/audio");
+
+  ws.onopen = () => {
+    document.getElementById("status").innerText = "Status: Recording...";
+    
+    // 2. Get microphone stream and start recording
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+        
+      // 💡 KEY CHANGE: Explicitly set MIME type to WebM/Opus to match backend's .webm expectation
+      mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm;codecs=opus' }); 
+
+      mediaRecorder.ondataavailable = e => {
+        if (e.data.size > 0 && ws.readyState === WebSocket.OPEN) {
+          let reader = new FileReader();
+          reader.onload = () => {
+            // Extract base64 part and send to backend
+            let base64data = reader.result.split(",")[1];
+            ws.send(base64data);
+          };
+          reader.readAsDataURL(e.data);
+        }
+      };
+
+      mediaRecorder.start(chunkSizeMs); // Send chunks continuously
+      console.log("Recording started, sending chunks every " + chunkSizeMs + "ms");
+    }).catch(err => {
+      console.error("Error accessing microphone:", err);
+      document.getElementById("status").innerText = "Status: Microphone Access Denied";
+      stopRecording();
+    });
+  };
+
+  // 3. Handle messages from the backend
+  ws.onmessage = (event) => {
+    try {
+      let data = JSON.parse(event.data);
+      
+      // Update the full history display
+      document.getElementById("full-english-history").innerText = data.full_english_history;
+
+      // Create and append the new conversation chunk
+      const display = document.getElementById("conversation-display");
+      
+      const enSpan = document.createElement('div');
+      enSpan.className = 'chunk-en';
+      enSpan.innerText = "You: " + data.latest_english;
+      
+      const teSpan = document.createElement('div');
+      teSpan.className = 'chunk-te';
+      teSpan.innerText = "Trans: " + data.latest_telugu;
+      
+      display.appendChild(enSpan);
+      display.appendChild(teSpan);
+      
+      // Auto-scroll to the bottom
+      display.scrollTop = display.scrollHeight;
+
+      // Play the translated audio chunk
+      let audio = new Audio("data:audio/mp3;base64," + data.audio);
+      audio.play().catch(e => console.error("Error playing audio:", e));
+      
+    } catch (e) {
+      console.error("Error parsing or processing WebSocket message:", e);
+    }
+  };
+
+  ws.onclose = () => {
+    document.getElementById("status").innerText = "Status: Disconnected";
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+    }
+    console.log("WebSocket closed.");
+  };
+
+  ws.onerror = (err) => {
+    document.getElementById("status").innerText = "Status: Error (Check console/server)";
+    console.error("WebSocket error:", err);
+    stopRecording();
+  };
+}
+
+function stopRecording() {
+  document.getElementById("startBtn").disabled = false;
+  document.getElementById("stopBtn").disabled = true;
+  document.getElementById("status").innerText = "Status: Stopping...";
+  
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop();
+    // Stop microphone tracks to turn off the light/icon
+    mediaRecorder.stream.getTracks().forEach(track => track.stop());
+  }
+  if (ws) {
+    ws.close();
+  }
+}
+</script>
+</body>
+</html>
