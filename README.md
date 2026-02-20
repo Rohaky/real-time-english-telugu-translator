@@ -14,6 +14,8 @@
 - OpenAI / Whisper
 
 ## 📂 Project Structure
+
+bash
 real-time-english-telugu-translator/
 │
 ├── app/
@@ -21,18 +23,18 @@ real-time-english-telugu-translator/
 │   ├── requirements.txt        # Python dependencies
 │
 ├── frontend/
-│   ├── index.html              # Frontend UI (HTML + JS for recording & WebSocket)
+│   ├── index.html              # Frontend UI
 │
 ├── notebooks/
-│   ├── English_to_Telugu_text.ipynb   # Translation experiments
-│   ├── Test.ipynb                     # Testing & prototyping
+│   ├── English_to_Telugu_text.ipynb
+│   ├── Test.ipynb
 │
-├── audio_samples/              # (Optional) Sample input/output audio files
+├── audio_samples/
 │   ├── sample_input.wav
 │   ├── sample_output.mp3
 │
-├── README.md                   # Project documentation
-├── .gitignore                  # Ignored files configuration
+├── README.md
+└── .gitignore
 
 ## ▶ How to Run
 
