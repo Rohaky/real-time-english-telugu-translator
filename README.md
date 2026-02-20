@@ -14,7 +14,25 @@
 - OpenAI / Whisper
 
 ## 📂 Project Structure
-(Show folder tree)
+real-time-english-telugu-translator/
+│
+├── app/
+│   ├── backend.py
+│   ├── requirements.txt
+│
+├── frontend/
+│   ├── index.html
+│
+├── notebooks/
+│   ├── English_to_Telugu_text.ipynb
+│   ├── Test.ipynb
+│
+├── audio_samples/        (optional - only if needed)
+│   ├── sample_input.wav
+│   ├── sample_output.mp3
+│
+├── README.md
+├── .gitignore
 
 ## ▶ How to Run
 
