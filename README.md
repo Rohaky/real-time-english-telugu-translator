@@ -17,22 +17,22 @@
 real-time-english-telugu-translator/
 │
 ├── app/
-│   ├── backend.py
-│   ├── requirements.txt
+│   ├── backend.py              # FastAPI backend (WebSocket + API logic)
+│   ├── requirements.txt        # Python dependencies
 │
 ├── frontend/
-│   ├── index.html
+│   ├── index.html              # Frontend UI (HTML + JS for recording & WebSocket)
 │
 ├── notebooks/
-│   ├── English_to_Telugu_text.ipynb
-│   ├── Test.ipynb
+│   ├── English_to_Telugu_text.ipynb   # Translation experiments
+│   ├── Test.ipynb                     # Testing & prototyping
 │
-├── audio_samples/        (optional - only if needed)
+├── audio_samples/              # (Optional) Sample input/output audio files
 │   ├── sample_input.wav
 │   ├── sample_output.mp3
 │
-├── README.md
-├── .gitignore
+├── README.md                   # Project documentation
+├── .gitignore                  # Ignored files configuration
 
 ## ▶ How to Run
 
