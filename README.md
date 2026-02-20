@@ -15,7 +15,9 @@
 
 ## 📂 Project Structure
 
-bash
+## 📂 Project Structure
+
+```bash
 real-time-english-telugu-translator/
 │
 ├── app/
@@ -34,7 +36,8 @@ real-time-english-telugu-translator/
 │   ├── sample_output.mp3
 │
 ├── README.md
-└── .gitignore
+
+```
 
 ## ▶ How to Run
 
